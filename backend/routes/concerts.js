@@ -1,16 +1,58 @@
-const mongoose = require('mongoose');
+const router = require('express').Router();
+let Concert = require('../models/concert.model');
 
-const Schema = mongoose.Schema;
-
-const concertSchema = new Schema({
-  name: { type: String, required: true },
-  location: { type: String, required: true },
-  time: { type: String, required: true },
-  date: { type: Date, required: true },
-}, {
-  timestamps: true,
+router.route('/').get((req, res) => {
+  Concert.find()
+    .then(concerts => res.json(concerts))
+    .catch(err => res.status(400).json('Error: ' + err));
 });
 
-const Concert = mongoose.model('Concert', concertSchema);
+router.route('/add').post((req, res) => {
+  const name = req.body.name;
+  const time = req.body.time;
+  const location = req.body.location;
+  const date = Date.parse(req.body.date);
 
-module.exports = Concert;
+  const newConcert = new Concert({
+    name,
+    time,
+    location,
+    date,
+  });
+
+  newConcert.save()
+  .then(() => res.json('Concert added!'))
+  .catch(err => res.status(400).json('Error: ' + err));
+});
+
+//get endpoint returns a concert item given an ID
+router.route('/:id').get((req, res) => {
+  Concert.findById(req.params.id)
+    .then(concert => res.json(concert))
+    .catch(err => res.status(400).json('Error: ' + err));
+});
+
+// DELETE 
+router.route('/:id').delete((req, res) => {
+  Concert.findByIdAndDelete(req.params.id)
+    .then(() => res.json('Concert deleted.'))
+    .catch(err => res.status(400).json('Error: ' + err));
+});
+
+// Update concert route
+router.route('/update/:id').post((req, res) => {
+  Concert.findById(req.params.id)
+    .then(concert => {
+      concert.username = req.body.username;
+      concert.description = req.body.description;
+      concert.duration = Number(req.body.duration);
+      concert.date = Date.parse(req.body.date);
+
+      concert.save()
+        .then(() => res.json('Concert updated!'))
+        .catch(err => res.status(400).json('Error: ' + err));
+    })
+    .catch(err => res.status(400).json('Error: ' + err));
+});
+
+module.exports = router;
