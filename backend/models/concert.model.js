@@ -1,26 +1,33 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-const concertSchema = new Schema({
+const concertSchema = new Schema(
+  {
     name: {
-        type: String,
-        required: true
+      type: String,
+      required: true
     },
-    time:{
-        type: String,
-        required: true,
+    artist: {
+      type: String,
+      required: true
     },
-    date:{
-        type: Date,
-        required:true
+    time: {
+      type: String,
+      required: true
     },
-    location:{
-        type: String,
-        required: true,
-    }},
-    {timestamps:true});
+    date: {
+      type: Date,
+      required: true
+    },
+    location: {
+      type: String,
+      required: true
+    }
+  },
+  { timestamps: true }
+);
 
-const Concert = mongoose.model('Concert', concertSchema);
+const Concert = mongoose.model("Concert", concertSchema);
 
 module.exports = Concert;
