@@ -4,7 +4,7 @@ const googleConfig = {
 	clientId:
 		'process.env_CLIENT_ID', // e.g. asdfghjkljhgfdsghjk.apps.googleusercontent.com
 	clientSecret: 'process.env_CLIENTSECRET', // e.g. _ASDFA%DFASDFASDFASD#FAD-
-	redirect: 'https://localhost:5000/auth/google/callbackgoogle-auth' // this must match your google api settings
+	redirect: 'https://localhost:8080/auth/google/callbackgoogle-auth' // this must match your google api settings
 };
 
 /**
