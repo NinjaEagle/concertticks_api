@@ -1,54 +1,99 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
-const Schema = mongoose.Schema;
-ObjectId = Schema.ObjectId;
+const Schema = mongoose.Schema
+// ObjectId = Schema.ObjectId
 
 const userSchema = new Schema(
-	{ email: { type: String, index: String } },
-	{ googleId: { type: String } },
 	{
-		name: {
+		email: {
 			type: String,
 			required: true,
-			unique: true,
 			trim: true,
-			minlength: 3
+			unique: true,
+			match: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 		}
 	},
-	{ password: { type: String } },
-	{ accessToken: { type: String } },
-	{ userId: { type: ObjectId, ref: 'User' } },
-	{ dateAdded: { type: Date, default: Date.now } },
+	{ googleProvider: { type: { id: String, token: String }, select: false } },
+	// {
+	// 	name: {
+	// 		type: String,
+	// 		required: true,
+	// 		unique: true,
+	// 		trim: true,
+	// 		minlength: 3
+	// 	}
+	// },
+	// { password: { type: String } },
+	// { accessToken: { type: String } },
+	// { userId: { type: ObjectId, ref: 'User' } },
+	// { dateAdded: { type: Date, default: Date.now } },
 	{
 		timestamps: true
 	}
-);
+)
+userSchema.set('toJSON', { getters: true, virtuals: true })
 
-const User = mongoose.model('User', userSchema);
+userSchema.statics.upsertGoogleUser = function(
+	accessToken,
+	refreshToken,
+	profile,
+	cb
+) {
+	var that = this
+	return this.findOne(
+		{
+			'googleProvider.id': profile.id
+		},
+		function(err, user) {
+			// no user was found, lets create a new one
+			if (!user) {
+				var newUser = new that({
+					fullName: profile.displayName,
+					email: profile.emails[0].value,
+					googleProvider: {
+						id: profile.id,
+						token: accessToken
+					}
+				})
 
-module.exports = User;
+				newUser.save(function(error, savedUser) {
+					if (error) {
+						console.log(error)
+					}
+					return cb(error, savedUser)
+				})
+			} else {
+				return cb(err, user)
+			}
+		}
+	)
+}
 
-module.exports.createUser = function(newUser, callback) {
-	bcrypt.genSalt(10, function(err, salt) {
-		bcrypt.hash(newUser.password, salt, function(err, hash) {
-			newUser.password = hash;
-			newUser.save(callback);
-		});
-	});
-};
+const User = mongoose.model('User', userSchema)
 
-module.exports.getUserByEmail = function(email, callback) {
-	var query = { email: email };
-	User.findOne(query, callback);
-};
+module.exports = User
 
-module.exports.getUserById = function(id, callback) {
-	User.findById(id, callback);
-};
+// module.exports.createUser = function(newUser, callback) {
+// 	bcrypt.genSalt(10, function(err, salt) {
+// 		bcrypt.hash(newUser.password, salt, function(err, hash) {
+// 			newUser.password = hash
+// 			newUser.save(callback)
+// 		})
+// 	})
+// }
 
-module.exports.comparePassword = function(candidatePassword, hash, callback) {
-	bcrypt.compare(candidatePassword, hash, function(err, isMatch) {
-		if (err) throw err;
-		callback(null, isMatch);
-	});
-};
+// module.exports.getUserByEmail = function(email, callback) {
+// 	var query = { email: email }
+// 	User.findOne(query, callback)
+// }
+
+// module.exports.getUserById = function(id, callback) {
+// 	User.findById(id, callback)
+// }
+
+// module.exports.comparePassword = function(candidatePassword, hash, callback) {
+// 	bcrypt.compare(candidatePassword, hash, function(err, isMatch) {
+// 		if (err) throw err
+// 		callback(null, isMatch)
+// 	})
+// }
