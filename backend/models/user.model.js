@@ -9,31 +9,25 @@ const userSchema = new Schema(
 			type: String,
 			required: true,
 			trim: true,
-			unique: true,
-			match: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
-		}
+			match: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+		},
 	},
 	{ googleProvider: { type: { id: String, token: String }, select: false } },
-	// {
-	// 	name: {
-	// 		type: String,
-	// 		required: true,
-	// 		unique: true,
-	// 		trim: true,
-	// 		minlength: 3
-	// 	}
-	// },
-	// { password: { type: String } },
-	// { accessToken: { type: String } },
-	// { userId: { type: ObjectId, ref: 'User' } },
-	// { dateAdded: { type: Date, default: Date.now } },
 	{
-		timestamps: true
-	}
+		fullName: {
+			type: String,
+			required: true,
+		},
+	},
+	{ dateAdded: { type: Date, default: Date.now } },
+	{
+		timestamps: true,
+	},
+	{ autoIndex: false }
 )
 userSchema.set('toJSON', { getters: true, virtuals: true })
 
-userSchema.statics.upsertGoogleUser = function(
+userSchema.statics.upsertGoogleUser = function (
 	accessToken,
 	refreshToken,
 	profile,
@@ -42,9 +36,10 @@ userSchema.statics.upsertGoogleUser = function(
 	var that = this
 	return this.findOne(
 		{
-			'googleProvider.id': profile.id
+			'googleProvider.id': profile.id,
 		},
-		function(err, user) {
+		function (err, user) {
+			console.log('Hey', user)
 			// no user was found, lets create a new one
 			if (!user) {
 				var newUser = new that({
@@ -52,13 +47,13 @@ userSchema.statics.upsertGoogleUser = function(
 					email: profile.emails[0].value,
 					googleProvider: {
 						id: profile.id,
-						token: accessToken
-					}
+						token: accessToken,
+					},
 				})
 
-				newUser.save(function(error, savedUser) {
+				newUser.save(function (error, savedUser) {
 					if (error) {
-						console.log(error)
+						console.log('This is the error:', error)
 					}
 					return cb(error, savedUser)
 				})
@@ -72,6 +67,8 @@ userSchema.statics.upsertGoogleUser = function(
 const User = mongoose.model('User', userSchema)
 
 module.exports = User
+
+// salting way
 
 // module.exports.createUser = function(newUser, callback) {
 // 	bcrypt.genSalt(10, function(err, salt) {

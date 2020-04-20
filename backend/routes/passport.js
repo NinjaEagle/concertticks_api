@@ -1,11 +1,11 @@
 var passport = require('passport')
-var GoogleStrategy = require('passport-google-oauth20').Strategy
+var GoogleStrategy = require('passport-google-token').Strategy
 let User = require('../models/user.model')
 
 passport.serializeUser(function(user, done) {
 	done(null, user)
 })
-passport.deserializeUser(function(usesr, done) {
+passport.deserializeUser(function(user, done) {
 	done(null, user)
 })
 
@@ -23,12 +23,6 @@ passport.use(
 			) {
 				return done(err, user)
 			})
-			// var userData = {
-			// 	email: profile.emails[0].value,
-			// 	name: profile.displayName,
-			// 	token: accessToken
-			// };
-			// return done(null, userData);
 		}
 	)
 )

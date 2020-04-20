@@ -9,12 +9,12 @@ router.get('/', function(req, res, next) {
 })
 
 /* GET Google Authentication API. */
-router.get(
-	'/auth/google',
-	passport.authenticate('google', {
-		scope: ['profile', 'email']
-	})
-)
+// router.get(
+// 	'/auth/google',
+// 	passport.authenticate('google', {
+// 		scope: ['profile', 'email']
+// 	})
+// )
 
 router.route('/auth/google').post(
 	passport.authenticate('google-token', { session: false }),
